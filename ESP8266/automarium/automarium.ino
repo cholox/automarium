@@ -20,6 +20,10 @@
 //DS18B20
 #define ONE_WIRE_BUS D7 //Pin to which is attached a temperature sensor
 
+//------------------------------------------
+//Relay
+#define RELAY_1_PIN D1
+//------------------------------------------
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
 long lastTemp; //The last measurement
@@ -77,11 +81,13 @@ void controlLight(int operation){
       //Turn off
       Serial.println("Turn light off");
       String response = "0";
+      digitalWrite(RELAY_1_PIN, LOW);
       client.publish(topic_response_light, response.c_str(), false);
     }else if(operation == 1){
       //Turn on
       Serial.println("Turn light on");
       String response = "1";
+      digitalWrite(RELAY_1_PIN, HIGH);
       client.publish(topic_response_light, response.c_str(), false);
     }
 }
@@ -125,6 +131,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void setup() {
   //Setup Serial port speed
   Serial.begin(115200);
+  //Setup pins
+  pinMode(RELAY_1_PIN, OUTPUT);
 
   //Setup WIFI
   WiFi.begin(ssid, password);
