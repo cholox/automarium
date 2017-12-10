@@ -2,8 +2,8 @@
  * @Author: Carlos Isaza <Cholox>
  * @Date:   22-Nov-2017
  * @Project: https://github.com/cholox/automarium
- * @Last modified by:   Cholox
- * @Last modified time: 22-Nov-2017
+ * @Last modified by:   cholox
+ * @Last modified time: 10-Dec-2017
  * @License: MIT
  */
 
@@ -44,4 +44,12 @@
    socket.on('connect', function(data) {
      console.log('Connected');
    });
+//------------------------------Direct Commands---------------------------------
+$('#turn_lights_on_button').click(function(event) {
+    socket.emit('turn_lights_on');
+});
+$('#turn_lights_off_button').click(function(event) {
+    socket.emit('turn_lights_off');
+});
+//------------------------------------------------------------------------------
  });

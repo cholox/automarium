@@ -1,8 +1,8 @@
 # @Author: Carlos Isaza <Cholox>
 # @Date:   22-Nov-2017
 # @Project: https://github.com/cholox/automarium
-# @Last modified by:   Cholox
-# @Last modified time: 22-Nov-2017
+# @Last modified by:   cholox
+# @Last modified time: 10-Dec-2017
 # @License: MIT
 
 import json
@@ -22,7 +22,7 @@ eventlet.monkey_patch()
 app = Flask(__name__)
 app.config['SECRET'] = '213hfSDkj435yxc*k3242_23'
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.config['MQTT_BROKER_URL'] = '134.102.82.52'
+app.config['MQTT_BROKER_URL'] = '192.168.0.4'
 app.config['MQTT_BROKER_PORT'] = 1883
 app.config['MQTT_USERNAME'] = 'pi'
 app.config['MQTT_PASSWORD'] = '1FjqrZ78*'
@@ -45,6 +45,11 @@ schedule_thread = None
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/test')
+def test_route():
+    return render_template('test.html')
 
 
 # @socketio.on('publish')
@@ -117,6 +122,17 @@ def handle_mqtt_message(client, userdata, message):
     # print(data)
     socketio.emit('mqtt_message', data)
 
+
+#-------------------------------Direct Commands---------------------------------
+@socketio.on('turn_lights_on')
+def turn_lights_on_command():
+    light_service.turn_lights_on()
+
+
+@socketio.on('turn_lights_off')
+def turn_lights_off_command():
+    light_service.turn_lights_off()
+#-------------------------------------------------------------------------------
 
 # @mqtt.on_log()
 # def handle_logging(client, userdata, level, buf):
