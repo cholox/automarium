@@ -34,11 +34,14 @@
         socket.emit('change_fertilizer_schedule', data=JSON.stringify(data));
      }
    });
+   var currentTemperature = '__°C';
+   $('#current-temperature').html(currentTemperature);
    socket.on('mqtt_message', function(data) {
      console.log(data);
-     var text = '(' + data['topic'] + ') ' + data['payload'];
-     var $textarea = $('#subscribe_messages');
-     $textarea.val($textarea.val() + text + '\n');
+     if (data.topic.indexOf('temperature') !== -1) {
+         currentTemperature = data.payload + ' °C';
+         $('#current-temperature').html(currentTemperature);
+     }
    });
 
    socket.on('connect', function(data) {

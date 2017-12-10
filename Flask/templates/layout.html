@@ -16,14 +16,17 @@
   </head>
 
   <body>
-    <header>
-      <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
         <a class="navbar-brand" href="#">automarium</a>
-        <button class="navbar-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
         </button>
-      </nav>
-    </header>
+        <ul class="navbar-nav mr-auto">
+        </ul>
+        <div class="my-2 my-lg-0">
+            <a class="text-light">Temperature: <span id="current-temperature"> __ °C</span></a>
+        </div>
+    </nav>
 
     <div class="container-fluid">
       <div class="row">
@@ -34,12 +37,6 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/test">Test Zone</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Analytics</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Export</a>
             </li>
           </ul>
         </nav>
