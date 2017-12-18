@@ -12,6 +12,7 @@
 #define mqtt_password "1FjqrZ78*"
 
 #define topic_response_light "home/aquarium/light/response"
+#define topic_response_relay2 "home/aquarium/relay2/response"
 #define topic_response_temperature "home/aquarium/temperature/response"
 #define topic_response_co2 "home/aquarium/co2/response"
 #define topic_response_fertilizer "home/aquarium/fertilizer/response"
@@ -21,8 +22,13 @@
 #define ONE_WIRE_BUS D7 //Pin to which is attached a temperature sensor
 
 //------------------------------------------
-//Relay
-#define RELAY_1_PIN D1
+//Relays
+#define RELAY_1_PIN D7
+#define RELAY_2_PIN D8
+//Motor
+#define MOTOR_PIN D1
+#define CO2_PIN D2
+#define TWINSTAR_PIN D3
 //------------------------------------------
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
@@ -51,27 +57,43 @@ void controlCO2(int operation){
       //Close co2 tube
       Serial.println("Close co2 tube");
       String response = "0";
+      digitalWrite(CO2_PIN, HIGH);
       client.publish(topic_response_co2, response.c_str(), false);
     }else if(operation == 1){
       //Open co2 tube
       Serial.println("Open co2 tube");
       String response = "1";
+      digitalWrite(CO2_PIN, LOW);
       client.publish(topic_response_co2, response.c_str(), false);
     }
 }
 void controlFertilizer(byte* payload, unsigned int length){
-  int emptyOperation = (char)payload[0] - '0';
-  if(emptyOperation == 0 && length == 1){
-    //Empty tube
+  int motorOperation = (char)payload[0] - '0';
+  if(motorOperation == 0 && length == 1){
+    //Empty tube / turn motor off
     Serial.println("Empty fertilizer tube");
+    digitalWrite(MOTOR_PIN, LOW);
     String response = "0";
     client.publish(topic_response_fertilizer, response.c_str(), false);
     return;
   }
-  Serial.println("Fertilize ml:");
-  for(int i = 0; i < length; i++){
-    Serial.print(payload[i]);
+  if(motorOperation == 1 && length == 1){
+    //Turn motor on
+    Serial.println("Turn motor on");
+    digitalWrite(MOTOR_PIN, HIGH);
+    String response = "1";
+    client.publish(topic_response_fertilizer, response.c_str(), false);
+    return;
   }
+  String amount = "";
+  for(int i = 0; i < length; i++){
+    amount += (char)payload[i] - '0';
+  }
+  Serial.println("Fertilize sec:");
+  Serial.print(amount.toInt());
+  digitalWrite(MOTOR_PIN, HIGH);
+  delay(amount.toInt() * 1000);
+  digitalWrite(MOTOR_PIN, LOW);
   Serial.println();
   String response = "x";
   client.publish(topic_response_fertilizer, response.c_str(), false);
@@ -81,14 +103,29 @@ void controlLight(int operation){
       //Turn off
       Serial.println("Turn light off");
       String response = "0";
-      digitalWrite(RELAY_1_PIN, LOW);
+      digitalWrite(RELAY_1_PIN, HIGH); //negative entry
       client.publish(topic_response_light, response.c_str(), false);
     }else if(operation == 1){
       //Turn on
       Serial.println("Turn light on");
       String response = "1";
-      digitalWrite(RELAY_1_PIN, HIGH);
+      digitalWrite(RELAY_1_PIN, LOW);
       client.publish(topic_response_light, response.c_str(), false);
+    }
+}
+void controlRelay2(int operation){
+  if(operation == 0){
+      //Turn off
+      Serial.println("Turn relay2 off");
+      String response = "0";
+      digitalWrite(RELAY_2_PIN, HIGH); //negative entry
+      client.publish(topic_response_relay2, response.c_str(), false);
+    }else if(operation == 1){
+      //Turn on
+      Serial.println("Turn relay2 on");
+      String response = "1";
+      digitalWrite(RELAY_2_PIN, LOW);
+      client.publish(topic_response_relay2, response.c_str(), false);
     }
 }
 //------------------------------------------
@@ -119,6 +156,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     controlLight(operation);
     return;
   }
+  if(strstr(topic, "relay2")){
+    int operation = (char)payload[0] - '0';
+    controlRelay2(operation);
+    return;
+  }
   Serial.print("Length:");
   Serial.println(length);
   Serial.println("Payload");
@@ -133,6 +175,10 @@ void setup() {
   Serial.begin(115200);
   //Setup pins
   pinMode(RELAY_1_PIN, OUTPUT);
+  pinMode(RELAY_2_PIN, OUTPUT);
+  pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(CO2_PIN, OUTPUT);
+  pinMode(TWINSTAR_PIN, OUTPUT);
 
   //Setup WIFI
   WiFi.begin(ssid, password);
