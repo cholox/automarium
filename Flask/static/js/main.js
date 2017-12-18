@@ -2,8 +2,8 @@
  * @Author: Carlos Isaza <Cholox>
  * @Date:   22-Nov-2017
  * @Project: https://github.com/cholox/automarium
- * @Last modified by:   cholox
- * @Last modified time: 10-Dec-2017
+ * @Last modified by:   Carlos Isaza
+ * @Last modified time: 18-Dec-2017
  * @License: MIT
  */
 
@@ -43,6 +43,14 @@
          $('#current-temperature').html(currentTemperature);
      }
    });
+   $('#change_relay2_schedule').click(function(event) {
+     var relay2_time1 = $('#relay2_time1').val();
+     var relay2_time2 = $('#relay2_time2').val();
+     var data = {time1: relay2_time1, time2: relay2_time2};
+     if (relay2_time1 != "" && relay2_time2 != "") {
+        socket.emit('change_relay2_schedule', data=JSON.stringify(data));
+    }
+   });
 
    socket.on('connect', function(data) {
      console.log('Connected');
@@ -53,6 +61,30 @@ $('#turn_lights_on_button').click(function(event) {
 });
 $('#turn_lights_off_button').click(function(event) {
     socket.emit('turn_lights_off');
+});
+$('#turn_relay2_on_button').click(function(event) {
+    socket.emit('turn_relay2_on');
+});
+$('#turn_relay2_off_button').click(function(event) {
+    socket.emit('turn_relay2_off');
+});
+$('#turn_motor_on_button').click(function(event) {
+    socket.emit('turn_motor_on');
+});
+$('#turn_motor_off_button').click(function(event) {
+    socket.emit('turn_motor_off');
+});
+$('#fertilize_secs_button').click(function(event) {
+    var fertiliAmount = $('#fertilize_secs_amount_test').val()
+    if (fertiliAmount != "") {
+        socket.emit('fertilize_secs', data=JSON.stringify({amount: fertiliAmount}));
+    }
+});
+$('#open_co2_button').click(function(event) {
+    socket.emit('open_co2');
+});
+$('#close_co2_button').click(function(event) {
+    socket.emit('close_co2');
 });
 //------------------------------------------------------------------------------
  });
