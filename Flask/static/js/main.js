@@ -9,6 +9,7 @@
 
 
  $(document).ready(function() {
+
    var socket = io.connect('http://' + document.domain + ':' + location.port);
    $('#change_light_schedule').click(function(event) {
      var light_time1 = $('#light_time1').val();
@@ -34,7 +35,7 @@
         socket.emit('change_fertilizer_schedule', data=JSON.stringify(data));
      }
    });
-   var currentTemperature = '__°C';
+   var currentTemperature = '';
    $('#current-temperature').html(currentTemperature);
    socket.on('mqtt_message', function(data) {
      console.log(data);

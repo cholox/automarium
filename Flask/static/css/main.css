@@ -2,8 +2,8 @@
  * @Author: Carlos Isaza <Cholox>
  * @Date:   22-Nov-2017
  * @Project: https://github.com/cholox/automarium
- * @Last modified by:   cholox
- * @Last modified time: 10-Dec-2017
+ * @Last modified by:   Carlos Isaza
+ * @Last modified time: 18-Dec-2017
  * @License: MIT
  */
 
@@ -72,10 +72,14 @@
    padding-bottom: 1.5rem;
  }
 
+ .main-container {
+     margin-bottom: 100px;
+ }
+
  .footer {
-    position: absolute;
     bottom: 0;
     width: 100%;
+    margin-top: 30px;
     /* Set the fixed height of the footer here */
     height: 60px;
     line-height: 60px; /* Vertically center the text there */
