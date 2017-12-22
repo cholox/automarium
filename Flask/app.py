@@ -2,7 +2,7 @@
 # @Date:   22-Nov-2017
 # @Project: https://github.com/cholox/automarium
 # @Last modified by:   Carlos Isaza
-# @Last modified time: 18-Dec-2017
+# @Last modified time: 22-Dec-2017
 # @License: MIT
 
 import json
@@ -10,9 +10,12 @@ import eventlet
 import schedule
 import threading
 import configparser
-from flask import Flask, render_template
+from flask import Flask, render_template, Response, \
+redirect, url_for, request, session, abort
 from flask_mqtt import Mqtt
 from flask_socketio import SocketIO
+from flask.ext.login import LoginManager, UserMixin, \
+login_required, login_user, logout_user
 
 from service.LightService import LightService
 from service.FertilizerService import FertilizerService
@@ -23,6 +26,7 @@ eventlet.monkey_patch()
 
 app = Flask(__name__)
 app.config['SECRET'] = '213hfSDkj435yxc*k3242_23'
+app.config['SECRET_KEY'] = '213hfSDkj435yxc*k3242_23_231'
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['MQTT_BROKER_URL'] = '192.168.0.4'
 app.config['MQTT_BROKER_PORT'] = 1883
@@ -33,6 +37,28 @@ app.config['MQTT_TLS_ENABLED'] = False
 app.config['MQTT_LAST_WILL_TOPIC'] = 'home/lastwill'
 app.config['MQTT_LAST_WILL_MESSAGE'] = 'bye'
 app.config['MQTT_LAST_WILL_QOS'] = 2
+
+# flask-login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+
+# silly user model
+class User(UserMixin):
+
+    def __init__(self, id, name = "", password = ""):
+        self.id = id
+        self.name = name
+        self.password = password
+
+    def __repr__(self):
+        return "%d/%s/%s" % (self.id, self.name, self.password)
+
+
+# create some users with ids 1 to
+users = [tato]
+
 
 mqtt = Mqtt(app)
 socketio = SocketIO(app, async_mode="eventlet")
@@ -73,13 +99,58 @@ def write_to_backup():
         parser.write(backupfile)
 
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
 
 @app.route('/test')
+@login_required
 def test_route():
     return render_template('test.html')
+
+
+# somewhere to login
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        for user in users:
+            if user.password == password:
+                id = user.id
+                login_user(user)
+                return redirect(request.args.get("next"))
+        else:
+            return abort(401)
+    else:
+        return Response('''
+        <form action="" method="post">
+            <p><input type=text name=username>
+            <p><input type=password name=password>
+            <p><input type=submit value=Login>
+        </form>
+        ''')
+
+
+# somewhere to logout
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return Response('<p>Logged out</p>')
+
+
+# handle login failed
+@app.errorhandler(401)
+def page_not_found(e):
+    return Response('<p>Login failed</p>')
+
+
+# callback to reload the user object
+@login_manager.user_loader
+def load_user(userid):
+    return User(userid)
 
 
 # @socketio.on('publish')
