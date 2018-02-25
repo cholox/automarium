@@ -79,6 +79,8 @@ def schedule_backup():
     co2_time2 = parser.get('co2', 'time2')
     relay2_time1 = parser.get('relay2', 'time1')
     relay2_time2 = parser.get('relay2', 'time2')
+    fertilizer_time = parser.get('fertilizer', 'time')
+    fertilizer_amount = parser.get('fertilizer', 'amount')
 
     schedule.every().day.at(light_time1).do(light_service.turn_lights_on).tag('light')
     schedule.every().day.at(light_time2).do(light_service.turn_lights_off).tag('light')
@@ -86,6 +88,7 @@ def schedule_backup():
     schedule.every().day.at(co2_time2).do(co2_service.close_co2).tag('co2')
     schedule.every().day.at(relay2_time1).do(relay2_service.turn_relay2_on).tag('relay2')
     schedule.every().day.at(relay2_time2).do(relay2_service.turn_relay2_off).tag('relay2')
+    schedule.every().day.at(fertilizer_time).do(fertilizer_service.fertilize_sec, fertilizer_amount).tag('fertilizer')
 
 
 def run_backup():
@@ -106,7 +109,9 @@ def index():
                   'co2_time1': parser.get('co2', 'time1'),
                   'co2_time2': parser.get('co2', 'time2'),
                   'relay2_time1': parser.get('relay2', 'time1'),
-                  'relay2_time2': parser.get('relay2', 'time2')}
+                  'relay2_time2': parser.get('relay2', 'time2'),
+                  'fertilizer_time': parser.get('fertilizer', 'time'),
+                  'fertilizer_amount': parser.get('fertilizer', 'amount')}
     return render_template('index.html', data=saved_data)
 
 
@@ -206,11 +211,14 @@ def change_co2_schedule(data):
 @socketio.on('change_fertilizer_schedule')
 def change_fertilizer_schedule(data):
     data = json.loads(data)
-    fertilize_time = data['time']
+    fertilizer_time = data['time']
     fertilizer_amount = data['amount']
     schedule.clear('fertilizer')
     try:
-        schedule.every().day.at(fertilize_time).do(fertilizer_service.fertilize_sec, fertilizer_amount).tag('fertilizer')
+        parser.set('fertilizer', 'time', fertilizer_time)
+        parser.set('fertilizer', 'amount', fertilizer_amount)
+        write_to_backup()
+        schedule.every().day.at(fertilizer_time).do(fertilizer_service.fertilize_sec, fertilizer_amount).tag('fertilizer')
         #schedule.every(4).seconds.do(fertilizer_service.fertilize_sec, fertilizer_amount).tag('fertilizer')
     except Exception as e:
         socketio.emit('error', e)
