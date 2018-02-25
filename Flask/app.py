@@ -2,7 +2,7 @@
 # @Date:   22-Nov-2017
 # @Project: https://github.com/cholox/automarium
 # @Last modified by:   Carlos Isaza
-# @Last modified time: 22-Dec-2017
+# @Last modified time: 25-Feb-2018
 # @License: MIT
 
 import json
@@ -101,7 +101,13 @@ def write_to_backup():
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    saved_data = {'light_time1': parser.get('light', 'time1'),
+                  'light_time2': parser.get('light', 'time2'),
+                  'co2_time1': parser.get('co2', 'time1'),
+                  'co2_time2': parser.get('co2', 'time2'),
+                  'relay2_time1': parser.get('relay2', 'time1'),
+                  'relay2_time2': parser.get('relay2', 'time2')}
+    return render_template('index.html', data=saved_data)
 
 
 @app.route('/test')
@@ -151,13 +157,6 @@ def page_not_found(e):
 @login_manager.user_loader
 def load_user(userid):
     return User(userid)
-
-
-# @socketio.on('publish')
-# def handle_publish(json_str):
-#     data = json.loads(json_str)
-#     mqtt.publish(data['topic'], data['message'])
-#     print('Publishing to topic: %s, message: %s' % (data['topic'], data['message']))
 
 
 @socketio.on('connect')
