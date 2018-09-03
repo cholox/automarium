@@ -1,8 +1,8 @@
 # @Author: Carlos Isaza <Cholox>
 # @Date:   22-Nov-2017
 # @Project: https://github.com/cholox/automarium
-# @Last modified by:   Carlos Isaza
-# @Last modified time: 25-Feb-2018
+# @Last modified by:   isaza
+# @Last modified time: 05-Apr-2018
 # @License: MIT
 
 import json
@@ -75,8 +75,12 @@ schedule_thread = None
 def schedule_backup():
     light_time1 = parser.get('light', 'time1')
     light_time2 = parser.get('light', 'time2')
+    light_time3 = parser.get('light', 'time3')
+    light_time4 = parser.get('light', 'time4')
     co2_time1 = parser.get('co2', 'time1')
     co2_time2 = parser.get('co2', 'time2')
+    co2_time3 = parser.get('co2', 'time3')
+    co2_time4 = parser.get('co2', 'time4')
     relay2_time1 = parser.get('relay2', 'time1')
     relay2_time2 = parser.get('relay2', 'time2')
     fertilizer_time = parser.get('fertilizer', 'time')
@@ -84,8 +88,14 @@ def schedule_backup():
 
     schedule.every().day.at(light_time1).do(light_service.turn_lights_on).tag('light')
     schedule.every().day.at(light_time2).do(light_service.turn_lights_off).tag('light')
+    if light_time3 != '' and light_time4 != '':
+        schedule.every().day.at(light_time3).do(light_service.turn_lights_on).tag('light')
+        schedule.every().day.at(light_time4).do(light_service.turn_lights_off).tag('light')
     schedule.every().day.at(co2_time1).do(co2_service.open_co2).tag('co2')
     schedule.every().day.at(co2_time2).do(co2_service.close_co2).tag('co2')
+    if co2_time3 != '' and co2_time4 != '':
+        schedule.every().day.at(co2_time3).do(co2_service.open_co2).tag('co2')
+        schedule.every().day.at(co2_time4).do(co2_service.close_co2).tag('co2')
     schedule.every().day.at(relay2_time1).do(relay2_service.turn_relay2_on).tag('relay2')
     schedule.every().day.at(relay2_time2).do(relay2_service.turn_relay2_off).tag('relay2')
     schedule.every().day.at(fertilizer_time).do(fertilizer_service.fertilize_sec, fertilizer_amount).tag('fertilizer')
@@ -106,8 +116,12 @@ def write_to_backup():
 def index():
     saved_data = {'light_time1': parser.get('light', 'time1'),
                   'light_time2': parser.get('light', 'time2'),
+                  'light_time3': parser.get('light', 'time3'),
+                  'light_time4': parser.get('light', 'time4'),
                   'co2_time1': parser.get('co2', 'time1'),
                   'co2_time2': parser.get('co2', 'time2'),
+                  'co2_time3': parser.get('co2', 'time3'),
+                  'co2_time4': parser.get('co2', 'time4'),
                   'relay2_time1': parser.get('relay2', 'time1'),
                   'relay2_time2': parser.get('relay2', 'time2'),
                   'fertilizer_time': parser.get('fertilizer', 'time'),
@@ -175,38 +189,63 @@ def subscribe_to_aquarium():
 
 @socketio.on('change_light_schedule')
 def change_light_schedule(data):
+    print(data)
     data = json.loads(data)
-    turn_on_time = data['time1']
-    turn_off_time = data['time2']
+    print(data)
+    turn_on_time1 = data['time1']
+    turn_off_time2 = data['time2']
+    turn_on_time3 = data['time3']
+    turn_off_time4 = data['time4']
     schedule.clear('light')
     try:
-        parser.set('light', 'time1', turn_on_time)
-        parser.set('light', 'time2', turn_off_time)
+        parser.set('light', 'time1', turn_on_time1)
+        parser.set('light', 'time2', turn_off_time2)
+        parser.set('light', 'time3', turn_on_time3)
+        parser.set('light', 'time4', turn_off_time4)
         write_to_backup()
-        schedule.every().day.at(turn_on_time).do(light_service.turn_lights_on).tag('light')
+        schedule.every().day.at(turn_on_time1).do(light_service.turn_lights_on).tag('light')
         # schedule.every(3).seconds.do(light_service.turn_lights_on).tag('light')
-        schedule.every().day.at(turn_off_time).do(light_service.turn_lights_off).tag('light')
+        schedule.every().day.at(turn_off_time2).do(light_service.turn_lights_off).tag('light')
         # schedule.every(4).seconds.do(light_service.turn_lights_off).tag('light')
+        if turn_on_time3 != '' and turn_off_time4 != '':
+            schedule.every().day.at(turn_on_time3).do(light_service.turn_lights_on).tag('light')
+            schedule.every().day.at(turn_off_time4).do(light_service.turn_lights_off).tag('light')
     except Exception as e:
         socketio.emit('error', e)
+
+@socketio.on('turn_off_light')
+def clean_light_schedule():
+    schedule.clear('light')
 
 
 @socketio.on('change_co2_schedule')
 def change_co2_schedule(data):
     data = json.loads(data)
-    turn_on_time = data['time1']
-    turn_off_time = data['time2']
+    turn_on_time1 = data['time1']
+    turn_off_time2 = data['time2']
+    turn_on_time3 = data['time3']
+    turn_off_time4 = data['time4']
     schedule.clear('co2')
     try:
-        parser.set('co2', 'time1', turn_on_time)
-        parser.set('co2', 'time2', turn_off_time)
+        parser.set('co2', 'time1', turn_on_time1)
+        parser.set('co2', 'time2', turn_off_time2)
+        parser.set('co2', 'time3', turn_on_time3)
+        parser.set('co2', 'time4', turn_off_time4)
         write_to_backup()
-        schedule.every().day.at(turn_on_time).do(co2_service.open_co2).tag('co2')
+        schedule.every().day.at(turn_on_time1).do(co2_service.open_co2).tag('co2')
         #schedule.every(3).seconds.do(co2_service.open_co2).tag('co2')
-        schedule.every().day.at(turn_off_time).do(co2_service.close_co2).tag('co2')
+        schedule.every().day.at(turn_off_time2).do(co2_service.close_co2).tag('co2')
         #schedule.every(4).seconds.do(co2_service.close_co2).tag('co2')
+        if turn_on_time3 != '' and turn_off_time4 != '':
+            schedule.every().day.at(turn_on_time3).do(co2_service.open_co2).tag('co2')
+            #schedule.every(3).seconds.do(co2_service.open_co2).tag('co2')
+            schedule.every().day.at(turn_off_time4).do(co2_service.close_co2).tag('co2')
     except Exception as e:
         socketio.emit('error', e)
+
+@socketio.on('turn_off_co2')
+def clean_co2_schedule():
+    schedule.clear('co2')
 
 @socketio.on('change_fertilizer_schedule')
 def change_fertilizer_schedule(data):
@@ -222,6 +261,10 @@ def change_fertilizer_schedule(data):
         #schedule.every(4).seconds.do(fertilizer_service.fertilize_sec, fertilizer_amount).tag('fertilizer')
     except Exception as e:
         socketio.emit('error', e)
+
+@socketio.on('turn_off_fertilizer')
+def clean_fertilizer_schedule():
+    schedule.clear('fertilizer')
 
 @socketio.on('change_relay2_schedule')
 def change_relay2_schedule(data):
@@ -240,6 +283,10 @@ def change_relay2_schedule(data):
         # schedule.every(4).seconds.do(relay2_service.turn_relay2s_off).tag('relay2')
     except Exception as e:
         socketio.emit('error', e)
+
+@socketio.on('turn_off_relay2')
+def clean_relay2_schedule():
+    schedule.clear('relay2')
 
 
 @mqtt.on_message()
