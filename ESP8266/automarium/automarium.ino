@@ -19,7 +19,7 @@
 
 //------------------------------------------
 //DS18B20
-#define ONE_WIRE_BUS D7 //Pin to which is attached a temperature sensor
+#define ONE_WIRE_BUS D6 //Pin to which is attached a temperature sensor
 
 //------------------------------------------
 //Relays
@@ -57,13 +57,13 @@ void controlCO2(int operation){
       //Close co2 tube
       Serial.println("Close co2 tube");
       String response = "0";
-      digitalWrite(CO2_PIN, HIGH);
+      digitalWrite(CO2_PIN, LOW);
       client.publish(topic_response_co2, response.c_str(), false);
     }else if(operation == 1){
       //Open co2 tube
       Serial.println("Open co2 tube");
       String response = "1";
-      digitalWrite(CO2_PIN, LOW);
+      digitalWrite(CO2_PIN, HIGH);
       client.publish(topic_response_co2, response.c_str(), false);
     }
 }
